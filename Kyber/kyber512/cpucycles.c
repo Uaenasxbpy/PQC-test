@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include "cpucycles.h"
 
+// 采用的第一种方法测试
 uint64_t cpucycles_overhead(void) {
   uint64_t t0, t1, overhead = -1LL;
   unsigned int i;
