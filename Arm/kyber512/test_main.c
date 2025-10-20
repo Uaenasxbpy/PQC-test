@@ -10,7 +10,7 @@
 #include "cpucycles.h"
 
 // 测试次数（1000次）
-#define TEST_ROUNDS 10
+#define TEST_ROUNDS 1000
 
 // 排序函数：用于计算中位数（qsort 依赖）
 int compare_uint64(const void *a, const void *b) {
@@ -19,24 +19,8 @@ int compare_uint64(const void *a, const void *b) {
 
 // 函数：获取CPU基础频率（单位：MHz）
 static double get_cpu_freq(void) {
-    FILE *fp = fopen("/proc/cpuinfo", "r");
-    if (fp == NULL) {
-        perror("Failed to open /proc/cpuinfo");
-        return -1.0;  // 标记获取失败
-    }
-
-    char buf[256];
-    double freq = -1.0;
-    // 读取 cpuinfo，提取第一个核心的 "cpu MHz" 字段（多核心频率通常一致）
-    while (fgets(buf, sizeof(buf), fp) != NULL) {
-        if (strstr(buf, "cpu MHz") != NULL) {
-            sscanf(buf, "cpu MHz\t: %lf", &freq);
-            break;
-        }
-    }
-
-    fclose(fp);
-    return freq;
+    // 直接返回固定的1200.0 MHz（1.2 GHz）
+    return 1200.0;
 }
 
 // 函数：获取系统总内存（单位：GB）
