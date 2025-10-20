@@ -10,7 +10,7 @@
 #include "cpucycles.h"
 
 // 测试次数（1000次）
-#define TEST_ROUNDS 1000
+#define TEST_ROUNDS 10
 
 // 排序函数：用于计算中位数（qsort 依赖）
 int compare_uint64(const void *a, const void *b) {

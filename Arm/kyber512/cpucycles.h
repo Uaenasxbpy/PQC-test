@@ -2,14 +2,21 @@
 #define CPUCYCLES_H
 
 #include <stdint.h>
+#include <time.h>
 
-// ARM架构下获取CPU周期数的实现
+// ARM架构下获取时间戳的通用实现
 static inline uint64_t cpucycles(void) {
   uint64_t result;
   
-  // 使用ARM架构的PMCCNTR_EL0（性能监视器计数寄存器）
-  // 需要确保EL0访问已启用（在Linux上通常默认启用）
-  __asm__ volatile ("mrs %0, pmccntr_el0" : "=r"(result));
+  #ifdef __aarch64__
+  // 尝试使用通用计时器而非性能计数器
+  __asm__ volatile ("mrs %0, cntvct_el0" : "=r"(result));
+  #else
+  // 32位ARM使用clock_gettime作为备选方案
+  struct timespec ts;
+  clock_gettime(CLOCK_MONOTONIC, &ts);
+  result = ts.tv_sec * 1000000000ULL + ts.tv_nsec;
+  #endif
   
   return result;
 }

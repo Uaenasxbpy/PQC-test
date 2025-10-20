@@ -1,6 +1,6 @@
 CC=/usr/bin/gcc
-# 为ARM架构优化的编译选项
-CFLAGS += -O3 -mcpu=cortex-a72 -mtune=cortex-a72 -fomit-frame-pointer
+# 为ARM架构优化的通用编译选项
+CFLAGS += -O3 -march=armv8-a -fomit-frame-pointer
 LDFLAGS=-lcrypto
 
 SOURCES= cbd.c fips202.c indcpa.c kem.c ntt.c poly.c polyvec.c reduce.c rng.c verify.c symmetric-shake.c cpucycles.c
