@@ -2,35 +2,24 @@
 #define CPUCYCLES_H
 
 #include <stdint.h>
+#include <time.h>
 
-
-// 2种方法获取CPU周期数
-// 1. rdpmc: 需要内核支持，且需要权限（echo 2 > /sys/devices/cpu/rdpmc）
-// 2. rdtsc: 不需要权限，但可能会被乱序执行影响精度
-#ifdef USE_RDPMC  /* Needs echo 2 > /sys/devices/cpu/rdpmc */
-
+// ARM架构下获取时间戳的通用实现
 static inline uint64_t cpucycles(void) {
-  const uint32_t ecx = (1U << 30) + 1;
   uint64_t result;
 
-  __asm__ volatile ("rdpmc; shlq $32,%%rdx; orq %%rdx,%%rax"
-    : "=a" (result) : "c" (ecx) : "rdx");
-
-  return result;
-}
-
+#ifdef __aarch64__
+  // 尝试使用通用计时器而非性能计数器
+  __asm__ volatile ("mrs %0, cntvct_el0" : "=r"(result));
 #else
-
-static inline uint64_t cpucycles(void) {
-  uint64_t result;
-
-  __asm__ volatile ("rdtsc; shlq $32,%%rdx; orq %%rdx,%%rax"
-    : "=a" (result) : : "%rdx");
+  // 32位ARM使用clock_gettime作为备选方案
+  struct timespec ts;
+  clock_gettime(CLOCK_MONOTONIC, &ts);
+  result = ts.tv_sec * 1000000000ULL + ts.tv_nsec;
+#endif
 
   return result;
 }
-
-#endif
 
 uint64_t cpucycles_overhead(void);
 
