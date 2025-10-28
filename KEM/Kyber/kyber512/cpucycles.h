@@ -2,36 +2,27 @@
 #define CPUCYCLES_H
 
 #include <stdint.h>
+#include <time.h>  // 用于clock_gettime
 
 
-// 2种方法获取CPU周期数
-// 1. rdpmc: 需要内核支持，且需要权限（echo 2 > /sys/devices/cpu/rdpmc）
-// 2. rdtsc: 不需要权限，但可能会被乱序执行影响精度
-#ifdef USE_RDPMC  /* Needs echo 2 > /sys/devices/cpu/rdpmc */
+// 仅支持x86架构（x86_64和i386）
+#if defined(__x86_64__) || defined(__i386__)
 
 static inline uint64_t cpucycles(void) {
-  const uint32_t ecx = (1U << 30) + 1;
-  uint64_t result;
-
-  __asm__ volatile ("rdpmc; shlq $32,%%rdx; orq %%rdx,%%rax"
-    : "=a" (result) : "c" (ecx) : "rdx");
-
-  return result;
+  struct timespec ts;
+  // 使用单调时钟（不受系统时间调整影响，适合计时）
+  clock_gettime(CLOCK_MONOTONIC, &ts);
+  // 转换为纳秒级64位时间戳（秒数*1e9 + 纳秒数）
+  return (uint64_t)ts.tv_sec * 1000000000ULL + ts.tv_nsec;
 }
 
 #else
-
-static inline uint64_t cpucycles(void) {
-  uint64_t result;
-
-  __asm__ volatile ("rdtsc; shlq $32,%%rdx; orq %%rdx,%%rax"
-    : "=a" (result) : : "%rdx");
-
-  return result;
-}
-
+// 非x86架构编译时报错
+#error "cpucycles.h only supports x86 architectures (x86_64/i386)"
 #endif
 
+
+// 声明开销计算函数（需在其他源文件中实现）
 uint64_t cpucycles_overhead(void);
 
-#endif
+#endif  // CPUCYCLES_H
